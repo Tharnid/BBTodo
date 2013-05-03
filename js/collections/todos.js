@@ -1,40 +1,46 @@
 // js/collections/todos.js
 
-var app = app || {};
+  var app = app || {};
 
-// Todo Collection
+  // Todo Collection
+  // ---------------
 
-// collection of todos backed by localstorage instead of a setDomLibrary
+  // The collection of todos is backed by *localStorage* instead of a remote
+  // server.
+  var TodoList = Backbone.Collection.extend({
 
-var TodoList = Backbone.Collection.extend({
-	// reference the collections model
-	model: app.Todo,
+    // Reference to this collection's model.
+    model: app.Todo,
 
-	// save all todo items to localstorage - using todos-backbone namespace
-	localStorage: new Backbone.LocalStorage('todos-backbone'),
+    // Save all of the todo items under the `"todos-backbone"` namespace.
+    localStorage: new Backbone.LocalStorage('todos-backbone'),
 
-	// filter down the list of todos that are finished
-	completed: function() {
-		return this.filter(function( todo ) {
-			return todo.get('completed');
-		});
-	},
+    // Filter down the list of all todo items that are finished.
+    completed: function() {
+      return this.filter(function( todo ) {
+        return todo.get('completed');
+      });
+    },
 
-	// filter list to only todos that are not finished
-	remaining: function() {
-		return this.without.apply( this, this.completed() );
-	},
+    // Filter down the list to only todo items that are still not finished.
+    remaining: function() {
+      return this.without.apply( this, this.completed() );
+    },
 
-	// Keep the todos in sequential order despite being saved in 
-	// unordered GUID in the db
-	nextOrder: function() {
-		if ( !this.length ) {
-			return 1;
-		}
-		return this.last().get('order') + 1;
-	},
+    // We keep the Todos in sequential order, despite being saved by unordered
+    // GUID in the database. This generates the next order number for new items.
+    nextOrder: function() {
+      if ( !this.length ) {
+        return 1;
+      }
+      return this.last().get('order') + 1;
+    },
 
-	// create global collection of todos
-	app.Todos = new TodoList();
+    // Todos are sorted by their original insertion order.
+    comparator: function( todo ) {
+      return todo.get('order');
+    }
+  });
 
-});
+  // Create our global collection of **Todos**.
+  app.Todos = new TodoList();

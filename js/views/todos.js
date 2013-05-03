@@ -14,7 +14,9 @@ app.TodoView = Backbone.View.extend({
 
 	// DOM events specific to an item
 	events: {
+		'click .toggle': 'togglecompleted', // new
 		'dblclick label': 'edit',
+		'click .destroy': 'clear',			// new
 		'keypress .edit': 'updateOnEnter',
 		'blur .edit': 'close'
 	},
@@ -24,13 +26,29 @@ app.TodoView = Backbone.View.extend({
 	// and 'TodoView' in this app, we set a direct reference 
 	initialize: function() {
 		this.listenTo(this.model, 'change', this.render);
+		this.listenTo(this.model, 'destroy', this.remove); // new
+		this.listenTo(this.model, 'visible', this.toggleVisible); // new
 	},
 
 	// Re-render the titles of the items
 	render: function() {
 		this.$el.html( this.template( this.model.toJSON() ) );
+
+		this.$el.toggleClass( 'completed', this.model.get('completed') ); 	// new
+		this.toggleVisible();												// new
+
 		this.$input = this.$('.edit');
-		return this,
+		return this;
+	},
+
+	// New Toggles visibility of item
+	toggleVisible: function() {
+		this.$el.toggleClass( 'hidden', this.isHidden());
+	},
+
+	// New Toggle the completed section
+	togglecompleted: function() {
+		this.model.toggle();
 	},
 
 	// Switch this view into 'editing' mode displaying the input field
@@ -45,6 +63,10 @@ app.TodoView = Backbone.View.extend({
 
 		if ( value ) {
 			this.model.save({ title: value });	
+		}
+		else
+		{
+			this.clear();	// new
 		}
 
 		this.$el.removeClass('editing');
